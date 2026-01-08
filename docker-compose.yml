@@ -1,0 +1,152 @@
+version: '3.8'
+
+networks:
+  ddb-network:
+    driver: bridge
+
+services:
+  # MySQL Node 1
+  mysql-node1:
+    image: mysql:8.0
+    container_name: mysql-node1
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ddb_node1
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data_node1:/var/lib/mysql
+      - ./docker/mysql/node1/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ddb-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL Node 2
+  mysql-node2:
+    image: mysql:8.0
+    container_name: mysql-node2
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ddb_node2
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data_node2:/var/lib/mysql
+      - ./docker/mysql/node2/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ddb-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL Node 3
+  mysql-node3:
+    image: mysql:8.0
+    container_name: mysql-node3
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ddb_node3
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql_data_node3:/var/lib/mysql
+      - ./docker/mysql/node3/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ddb-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Middleware Node 1
+  middleware-node1:
+    build:
+      context: .
+      dockerfile: docker/middleware/Dockerfile
+    container_name: middleware-node1
+    command: python main.py --node-id 1
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ddb-network
+    depends_on:
+      mysql-node1:
+        condition: service_healthy
+      mysql-node2:
+        condition: service_healthy
+      mysql-node3:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Middleware Node 2
+  middleware-node2:
+    build:
+      context: .
+      dockerfile: docker/middleware/Dockerfile
+    container_name: middleware-node2
+    command: python main.py --node-id 2
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ddb-network
+    depends_on:
+      mysql-node1:
+        condition: service_healthy
+      mysql-node2:
+        condition: service_healthy
+      mysql-node3:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Middleware Node 3
+  middleware-node3:
+    build:
+      context: .
+      dockerfile: docker/middleware/Dockerfile
+    container_name: middleware-node3
+    command: python main.py --node-id 3
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ddb-network
+    depends_on:
+      mysql-node1:
+        condition: service_healthy
+      mysql-node2:
+        condition: service_healthy
+      mysql-node3:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data_node1:
+  mysql_data_node2:
+  mysql_data_node3:

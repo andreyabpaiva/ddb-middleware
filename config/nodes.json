@@ -1,0 +1,30 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "ip": "middleware-node1",
+      "port": 5001,
+      "mysql_host": "mysql-node1",
+      "mysql_port": 3306,
+      "mysql_database": "ddb_node1"
+    },
+    {
+      "id": 2,
+      "ip": "middleware-node2",
+      "port": 5002,
+      "mysql_host": "mysql-node2",
+      "mysql_port": 3306,
+      "mysql_database": "ddb_node2"
+    },
+    {
+      "id": 3,
+      "ip": "middleware-node3",
+      "port": 5003,
+      "mysql_host": "mysql-node3",
+      "mysql_port": 3306,
+      "mysql_database": "ddb_node3"
+    }
+  ],
+  "heartbeat_interval": 5,
+  "heartbeat_timeout": 15
+}

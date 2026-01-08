@@ -1,0 +1,8 @@
+{
+  "user": "ddb_user",
+  "password": "ddb_password",
+  "charset": "utf8mb4",
+  "autocommit": false,
+  "connection_timeout": 10,
+  "pool_size": 5
+}
