@@ -1,7 +1,4 @@
 # Distributed Database Middleware
-
-A distributed database system with custom replication, 2-phase commit, and coordinator election using the Bully algorithm.
-
 ## Overview
 
 This project implements a distributed database middleware system that manages three MySQL nodes with:
