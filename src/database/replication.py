@@ -1,7 +1,3 @@
-"""
-Replication manager for synchronizing data across nodes.
-Handles write query replication and conflict resolution.
-"""
 import logging
 from typing import Dict, Any, List, Optional
 from src.communication.socket_client import SocketClient
@@ -10,20 +6,13 @@ from src.communication import message_types
 
 
 class ReplicationManager:
-    """Manages data replication across database nodes."""
 
     def __init__(self, node_id: int, socket_client: SocketClient):
-        """
-        Initialize replication manager.
 
-        Args:
-            node_id: ID of this node
-            socket_client: Socket client for communication
-        """
         self.node_id = node_id
         self.socket_client = socket_client
         self.logger = logging.getLogger(__name__)
-        self.replication_log = []  # Track replication attempts
+        self.replication_log = [] 
 
     def replicate_query(
         self,
@@ -32,36 +21,21 @@ class ReplicationManager:
         target_nodes: List[Dict[str, Any]],
         wait_for_ack: bool = True
     ) -> Dict[str, Any]:
-        """
-        Replicate a query to target nodes.
 
-        Args:
-            query: SQL query to replicate
-            transaction_id: Transaction ID
-            target_nodes: List of target node configurations
-            wait_for_ack: Whether to wait for acknowledgments
-
-        Returns:
-            Replication result dictionary
-        """
         self.logger.info(f"Replicating query to {len(target_nodes)} nodes for transaction {transaction_id}")
 
-        # Create replication message
         replication_message = MessageProtocol.create_replication_message(
             sender_id=self.node_id,
             query=query,
             transaction_id=transaction_id
         )
 
-        # Track results
         successful_nodes = []
         failed_nodes = []
 
-        # Send to each target node
         for node in target_nodes:
             node_id = node['id']
 
-            # Skip self
             if node_id == self.node_id:
                 continue
 
@@ -81,14 +55,12 @@ class ReplicationManager:
                         failed_nodes.append(node_id)
                         self.logger.warning(f"Node {node_id} failed to acknowledge replication")
                 else:
-                    # If not waiting for ack, assume success
                     successful_nodes.append(node_id)
 
             except Exception as e:
                 self.logger.error(f"Replication failed for node {node_id}: {e}")
                 failed_nodes.append(node_id)
 
-        # Log replication attempt
         self._log_replication(
             transaction_id,
             query,
@@ -96,7 +68,6 @@ class ReplicationManager:
             failed_nodes
         )
 
-        # Determine overall success
         total_targets = len([n for n in target_nodes if n['id'] != self.node_id])
         success_rate = len(successful_nodes) / total_targets if total_targets > 0 else 1.0
 
@@ -116,26 +87,13 @@ class ReplicationManager:
         sender_id: int,
         query_executor
     ) -> Dict[str, Any]:
-        """
-        Handle incoming replication request from coordinator.
 
-        Args:
-            query: SQL query to execute
-            transaction_id: Transaction ID
-            sender_id: ID of coordinator node
-            query_executor: QueryExecutor instance to execute query
-
-        Returns:
-            Response message
-        """
         self.logger.info(f"Received replication request from node {sender_id} for transaction {transaction_id}")
 
         try:
-            # Execute the replicated query
             result = query_executor.execute(query, transaction_id, log_query=True)
 
             if result['success']:
-                # Send acknowledgment
                 response = MessageProtocol.create_message(
                     message_types.REPLICATION_ACK,
                     self.node_id,
@@ -146,7 +104,6 @@ class ReplicationManager:
                 )
                 self.logger.info(f"Replication successful for transaction {transaction_id}")
             else:
-                # Send negative acknowledgment
                 response = MessageProtocol.create_message(
                     message_types.REPLICATION_NACK,
                     self.node_id,
@@ -176,16 +133,7 @@ class ReplicationManager:
         self,
         transaction_id: str
     ) -> Dict[str, Any]:
-        """
-        Check consistency of a replicated transaction.
 
-        Args:
-            transaction_id: Transaction ID to check
-
-        Returns:
-            Consistency check result
-        """
-        # Query replication log for this transaction
         replication_entry = self._get_replication_entry(transaction_id)
 
         if not replication_entry:
@@ -211,17 +159,7 @@ class ReplicationManager:
         query: str,
         failed_node_configs: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """
-        Retry replication for failed nodes.
 
-        Args:
-            transaction_id: Transaction ID
-            query: SQL query to replicate
-            failed_node_configs: List of failed node configurations
-
-        Returns:
-            Repair result
-        """
         self.logger.info(f"Attempting to repair replication for transaction {transaction_id}")
 
         return self.replicate_query(
@@ -238,18 +176,10 @@ class ReplicationManager:
         successful_nodes: List[int],
         failed_nodes: List[int]
     ):
-        """
-        Log replication attempt.
 
-        Args:
-            transaction_id: Transaction ID
-            query: Replicated query
-            successful_nodes: List of successful node IDs
-            failed_nodes: List of failed node IDs
-        """
         log_entry = {
             'transaction_id': transaction_id,
-            'query': query[:100],  # Truncate for logging
+            'query': query[:100], 
             'successful_nodes': successful_nodes,
             'failed_nodes': failed_nodes,
             'timestamp': self._get_timestamp()
@@ -257,42 +187,23 @@ class ReplicationManager:
 
         self.replication_log.append(log_entry)
 
-        # Keep log size manageable (last 1000 entries)
         if len(self.replication_log) > 1000:
             self.replication_log = self.replication_log[-1000:]
 
     def _get_replication_entry(self, transaction_id: str) -> Optional[Dict[str, Any]]:
-        """
-        Get replication log entry for a transaction.
 
-        Args:
-            transaction_id: Transaction ID
-
-        Returns:
-            Log entry or None
-        """
         for entry in reversed(self.replication_log):
             if entry['transaction_id'] == transaction_id:
                 return entry
         return None
 
     def _get_timestamp(self) -> str:
-        """
-        Get current timestamp.
 
-        Returns:
-            ISO format timestamp
-        """
         from src.utils.helpers import get_timestamp
         return get_timestamp()
 
     def get_replication_stats(self) -> Dict[str, Any]:
-        """
-        Get replication statistics.
 
-        Returns:
-            Statistics dictionary
-        """
         if not self.replication_log:
             return {
                 'total_replications': 0,

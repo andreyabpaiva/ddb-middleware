@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import sys
 import argparse
 import signal
@@ -7,18 +6,10 @@ from src.core.node import Node
 from src.utils.config import Config
 from src.utils.logger import setup_logger
 
-# Global node instance for signal handling
 node_instance = None
 
-
 def signal_handler(sig, frame):
-    """
-    Handle shutdown signals gracefully.
 
-    Args:
-        sig: Signal number
-        frame: Current stack frame
-    """
     print("\nReceived shutdown signal, stopping node...")
 
     if node_instance:
@@ -28,12 +19,7 @@ def signal_handler(sig, frame):
 
 
 def parse_arguments():
-    """
-    Parse command-line arguments.
 
-    Returns:
-        Parsed arguments
-    """
     parser = argparse.ArgumentParser(
         description='Distributed Database Middleware Node'
     )
@@ -64,13 +50,11 @@ def parse_arguments():
 
 
 def main():
-    """Main function to start the node."""
+
     global node_instance
 
-    # Parse arguments
     args = parse_arguments()
 
-    # Setup basic logging
     import logging
     log_level = getattr(logging, args.log_level)
 
@@ -79,31 +63,21 @@ def main():
     print(f"Log level: {args.log_level}")
 
     try:
-        # Load configuration
         config = Config(config_dir=args.config_dir)
 
-        # Create node instance
         node_instance = Node(node_id=args.node_id, config=config)
 
-        # Register signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
 
-        # Start the node
         node_instance.start()
 
         print(f"\nNode {args.node_id} is running...")
         print(f"Press Ctrl+C to stop\n")
 
-        # Keep running
         while True:
             time.sleep(1)
 
-            # Optionally print status periodically
-            # Uncomment to enable periodic status updates
-            # if time.time() % 30 < 1:  # Every 30 seconds
-            #     status = node_instance.get_status()
-            #     print(f"Status: {status}")
 
     except KeyboardInterrupt:
         print("\nShutting down...")

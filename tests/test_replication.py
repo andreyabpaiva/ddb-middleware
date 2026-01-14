@@ -1,6 +1,3 @@
-"""
-Tests for replication functionality.
-"""
 import pytest
 from unittest.mock import Mock
 from src.database.replication import ReplicationManager
@@ -8,7 +5,6 @@ from src.communication import message_types
 
 
 def test_replication_manager_initialization():
-    """Test replication manager initialization."""
     socket_client = Mock()
     replication_manager = ReplicationManager(
         node_id=1,
@@ -21,7 +17,6 @@ def test_replication_manager_initialization():
 
 
 def test_get_replication_stats_empty():
-    """Test replication statistics when empty."""
     socket_client = Mock()
     replication_manager = ReplicationManager(
         node_id=1,
@@ -37,7 +32,6 @@ def test_get_replication_stats_empty():
 
 
 def test_check_replication_consistency_not_found():
-    """Test consistency check for non-existent transaction."""
     socket_client = Mock()
     replication_manager = ReplicationManager(
         node_id=1,
@@ -51,7 +45,6 @@ def test_check_replication_consistency_not_found():
 
 
 def test_log_replication():
-    """Test replication logging."""
     socket_client = Mock()
     replication_manager = ReplicationManager(
         node_id=1,

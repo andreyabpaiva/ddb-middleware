@@ -1,6 +1,3 @@
-"""
-Tests for Bully election algorithm.
-"""
 import pytest
 from unittest.mock import Mock, MagicMock
 from src.core.election import BullyElection
@@ -8,7 +5,6 @@ from src.communication import message_types
 
 
 def test_election_initialization():
-    """Test election initialization."""
     socket_client = Mock()
     election = BullyElection(
         node_id=2,
@@ -21,7 +17,6 @@ def test_election_initialization():
 
 
 def test_set_coordinator():
-    """Test setting coordinator."""
     socket_client = Mock()
     election = BullyElection(node_id=2, socket_client=socket_client)
 
@@ -32,7 +27,6 @@ def test_set_coordinator():
 
 
 def test_is_coordinator():
-    """Test coordinator check."""
     socket_client = Mock()
     election = BullyElection(node_id=2, socket_client=socket_client)
 
@@ -42,7 +36,6 @@ def test_is_coordinator():
 
 
 def test_handle_coordinator_announcement():
-    """Test handling coordinator announcement."""
     socket_client = Mock()
     callback = Mock()
     election = BullyElection(
@@ -58,7 +51,6 @@ def test_handle_coordinator_announcement():
 
 
 def test_handle_election_message():
-    """Test handling election message."""
     socket_client = Mock()
     election = BullyElection(node_id=2, socket_client=socket_client)
 
@@ -75,7 +67,6 @@ def test_handle_election_message():
 
 
 def test_reset_election():
-    """Test election reset."""
     socket_client = Mock()
     election = BullyElection(node_id=2, socket_client=socket_client)
 

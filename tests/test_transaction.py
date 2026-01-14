@@ -1,13 +1,9 @@
-"""
-Tests for transaction management and 2PC.
-"""
 import pytest
 from src.transaction.lock_manager import LockManager, LockType
 from src.transaction.transaction_manager import TransactionManager, TransactionState
 
 
 def test_lock_manager_initialization():
-    """Test lock manager initialization."""
     lock_manager = LockManager()
 
     assert len(lock_manager.locks) == 0
@@ -15,7 +11,6 @@ def test_lock_manager_initialization():
 
 
 def test_acquire_shared_lock():
-    """Test acquiring shared lock."""
     lock_manager = LockManager()
 
     result = lock_manager.acquire_lock(
@@ -30,7 +25,6 @@ def test_acquire_shared_lock():
 
 
 def test_acquire_exclusive_lock():
-    """Test acquiring exclusive lock."""
     lock_manager = LockManager()
 
     result = lock_manager.acquire_lock(
@@ -45,7 +39,6 @@ def test_acquire_exclusive_lock():
 
 
 def test_multiple_shared_locks():
-    """Test multiple shared locks on same resource."""
     lock_manager = LockManager()
 
     result1 = lock_manager.acquire_lock(
@@ -69,7 +62,6 @@ def test_multiple_shared_locks():
 
 
 def test_release_lock():
-    """Test releasing lock."""
     lock_manager = LockManager()
 
     lock_manager.acquire_lock(
@@ -86,7 +78,6 @@ def test_release_lock():
 
 
 def test_release_all_locks():
-    """Test releasing all locks for a transaction."""
     lock_manager = LockManager()
 
     lock_manager.acquire_lock("users", "TXN-001", LockType.SHARED, timeout=1)
@@ -99,7 +90,6 @@ def test_release_all_locks():
 
 
 def test_transaction_manager_initialization():
-    """Test transaction manager initialization."""
     lock_manager = LockManager()
     tx_manager = TransactionManager(node_id=1, lock_manager=lock_manager)
 
@@ -108,7 +98,6 @@ def test_transaction_manager_initialization():
 
 
 def test_begin_transaction():
-    """Test beginning a transaction."""
     lock_manager = LockManager()
     tx_manager = TransactionManager(node_id=1, lock_manager=lock_manager)
 
@@ -119,7 +108,6 @@ def test_begin_transaction():
 
 
 def test_commit_transaction():
-    """Test committing a transaction."""
     lock_manager = LockManager()
     tx_manager = TransactionManager(node_id=1, lock_manager=lock_manager)
 
@@ -131,7 +119,6 @@ def test_commit_transaction():
 
 
 def test_abort_transaction():
-    """Test aborting a transaction."""
     lock_manager = LockManager()
     tx_manager = TransactionManager(node_id=1, lock_manager=lock_manager)
 
@@ -143,7 +130,6 @@ def test_abort_transaction():
 
 
 def test_prepare_transaction():
-    """Test preparing a transaction."""
     lock_manager = LockManager()
     tx_manager = TransactionManager(node_id=1, lock_manager=lock_manager)
 
@@ -155,7 +141,6 @@ def test_prepare_transaction():
 
 
 def test_get_active_transactions():
-    """Test getting active transactions."""
     lock_manager = LockManager()
     tx_manager = TransactionManager(node_id=1, lock_manager=lock_manager)
 

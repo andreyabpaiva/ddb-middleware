@@ -1,6 +1,4 @@
-"""
-Tests for communication components.
-"""
+
 import pytest
 from src.communication.protocol import MessageProtocol
 from src.communication import message_types
@@ -8,7 +6,6 @@ from src.security.checksum import verify_message_checksum
 
 
 def test_create_query_message():
-    """Test query message creation."""
     message = MessageProtocol.create_query_message(
         sender_id=1,
         query="SELECT * FROM users",
@@ -24,7 +21,6 @@ def test_create_query_message():
 
 
 def test_create_heartbeat_message():
-    """Test heartbeat message creation."""
     message = MessageProtocol.create_heartbeat_message(sender_id=1)
 
     assert message['type'] == message_types.HEARTBEAT
@@ -34,7 +30,6 @@ def test_create_heartbeat_message():
 
 
 def test_create_election_message():
-    """Test election message creation."""
     message = MessageProtocol.create_election_message(
         sender_id=1,
         receiver_id=2
@@ -47,7 +42,6 @@ def test_create_election_message():
 
 
 def test_create_transaction_prepare():
-    """Test 2PC prepare message creation."""
     message = MessageProtocol.create_transaction_prepare(
         sender_id=1,
         transaction_id="TXN-001",
@@ -60,7 +54,6 @@ def test_create_transaction_prepare():
 
 
 def test_message_encoding_decoding():
-    """Test message encoding and decoding."""
     original = MessageProtocol.create_query_message(
         sender_id=1,
         query="SELECT * FROM users"
@@ -75,12 +68,10 @@ def test_message_encoding_decoding():
 
 
 def test_verify_message():
-    """Test message verification."""
     message = MessageProtocol.create_heartbeat_message(sender_id=1)
 
     assert MessageProtocol.verify_message(message)
 
-    # Tamper with message
     message['data']['tampered'] = True
 
     assert not MessageProtocol.verify_message(message)
