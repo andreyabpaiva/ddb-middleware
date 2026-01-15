@@ -56,12 +56,15 @@ class MessageProtocol:
     def create_query_message(
         sender_id: int,
         query: str,
-        transaction_id: Optional[str] = None
+        transaction_id: Optional[str] = None,
+        from_coordinator: bool = False
     ) -> Dict[str, Any]:
 
         data = {'query': query}
         if transaction_id:
             data['transaction_id'] = transaction_id
+        if from_coordinator:
+            data['from_coordinator'] = True
 
         return MessageProtocol.create_message(
             message_types.QUERY,

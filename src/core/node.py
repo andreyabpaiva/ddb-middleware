@@ -238,13 +238,10 @@ class Node:
 
         from_coordinator = data.get('from_coordinator', False)
 
-        from src.utils.helpers import is_write_query
-        if not from_coordinator and is_write_query(query):
-
-            result = self.execute_query(query)
-        else:
-
+        if from_coordinator:
             result = self.query_executor.execute(query, transaction_id)
+        else:
+            result = self.execute_query(query)
 
         return MessageProtocol.create_response(
             sender_id=self.node_id,
@@ -359,7 +356,12 @@ class Node:
                     wait_for_response=True
                 )
 
-                return response.get('data', {}) if response else {
+                if response:
+                    data = response.get('data', {})
+                    if 'result' in data:
+                        return data['result']
+                    return data
+                return {
                     'success': False,
                     'error': 'No response from coordinator'
                 }

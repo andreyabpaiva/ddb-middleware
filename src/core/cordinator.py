@@ -101,8 +101,10 @@ class Coordinator:
                 return {
                     'success': True,
                     'transaction_id': transaction_id,
+                    'node_id': self.node_id, 
                     'coordinator_id': self.node_id,
                     'participants': result.get('participants', 0),
+                    'replicated_to': [n['id'] for n in participant_nodes],
                     'data': local_result.get('data'),
                     'affected_rows': local_result.get('affected_rows', 0)
                 }
@@ -163,6 +165,7 @@ class Coordinator:
             self.load_balancer.record_query_end(selected_node_id, response_time)
 
             result['selected_node'] = selected_node_id
+            result['node_id'] = selected_node_id 
             result['coordinator_id'] = self.node_id
             result['response_time'] = response_time
 
@@ -189,7 +192,8 @@ class Coordinator:
             query_msg = MessageProtocol.create_query_message(
                 sender_id=self.node_id,
                 query=query,
-                transaction_id=transaction_id
+                transaction_id=transaction_id,
+                from_coordinator=True
             )
 
             response = self.socket_client.send_message(
@@ -200,7 +204,10 @@ class Coordinator:
             )
 
             if response:
-                return response.get('data', {})
+                data = response.get('data', {})
+                if 'result' in data:
+                    return data['result']
+                return data
             else:
                 return {
                     'success': False,
