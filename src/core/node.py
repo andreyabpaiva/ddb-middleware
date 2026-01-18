@@ -95,7 +95,8 @@ class Node:
         self.two_pc_coordinator = TwoPhaseCommitCoordinator(
             node_id=self.node_id,
             socket_client=self.socket_client,
-            transaction_manager=self.transaction_manager
+            transaction_manager=self.transaction_manager,
+            query_executor=self.query_executor
         )
 
         self.two_pc_participant = TwoPhaseCommitParticipant(

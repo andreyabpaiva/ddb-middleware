@@ -112,7 +112,7 @@ def format_result(result: Dict[str, Any]):
     success = data.get('success', False)
 
     if not success:
-        print(f"\n❌ Query failed: {data.get('error', 'Unknown error')}")
+        print(f"\nQuery failed: {data.get('error', 'Unknown error')}")
         return
 
     print(f"\nQuery successful")

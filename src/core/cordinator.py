@@ -95,18 +95,14 @@ class Coordinator:
             )
 
             if result['success']:
-
-                local_result = self.query_executor.execute(query, transaction_id)
-
                 return {
                     'success': True,
                     'transaction_id': transaction_id,
-                    'node_id': self.node_id, 
+                    'node_id': self.node_id,
                     'coordinator_id': self.node_id,
                     'participants': result.get('participants', 0),
                     'replicated_to': [n['id'] for n in participant_nodes],
-                    'data': local_result.get('data'),
-                    'affected_rows': local_result.get('affected_rows', 0)
+                    'affected_rows': result.get('affected_rows', 0)
                 }
             else:
                 return {

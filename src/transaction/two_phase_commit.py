@@ -12,14 +12,17 @@ class TwoPhaseCommitCoordinator:
         self,
         node_id: int,
         socket_client: SocketClient,
-        transaction_manager: TransactionManager
+        transaction_manager: TransactionManager,
+        query_executor=None
     ):
 
         self.node_id = node_id
         self.socket_client = socket_client
         self.transaction_manager = transaction_manager
+        self.query_executor = query_executor
         self.logger = logging.getLogger(__name__)
         self.timeout = 30  # seconds
+        self.prepared_query: Dict[str, str] = {}  # Store prepared queries for coordinator
 
     def execute_2pc(
         self,
@@ -85,7 +88,22 @@ class TwoPhaseCommitCoordinator:
             node_id = node['id']
 
             if node_id == self.node_id:
-                votes_yes.append(node_id)
+                try:
+                    if self.query_executor:
+                        self.transaction_manager.begin_transaction(transaction_id)
+                        can_commit, error = self.query_executor.prepare_query(query, transaction_id)
+                        if can_commit:
+                            self.prepared_query[transaction_id] = query
+                            votes_yes.append(node_id)
+                            self.logger.debug(f"Coordinator (node {node_id}) voted YES")
+                        else:
+                            votes_no.append(node_id)
+                            self.logger.warning(f"Coordinator (node {node_id}) voted NO: {error}")
+                    else:
+                        votes_yes.append(node_id)
+                except Exception as e:
+                    self.logger.error(f"Coordinator prepare failed: {e}")
+                    votes_no.append(node_id)
                 continue
 
             try:
@@ -146,7 +164,17 @@ class TwoPhaseCommitCoordinator:
             node_id = node['id']
 
             if node_id == self.node_id:
-                committed_nodes.append(node_id)
+                try:
+                    if self.query_executor and transaction_id in self.prepared_query:
+                        query = self.prepared_query[transaction_id]
+                        self.query_executor.commit_prepared_query(query, transaction_id)
+                        self.transaction_manager.commit_transaction(transaction_id)
+                        del self.prepared_query[transaction_id]
+                        self.logger.debug(f"Coordinator (node {node_id}) committed")
+                    committed_nodes.append(node_id)
+                except Exception as e:
+                    self.logger.error(f"Coordinator commit failed: {e}")
+                    failed_nodes.append(node_id)
                 continue
 
             try:

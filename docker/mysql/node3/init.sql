@@ -1,6 +1,10 @@
 -- Initialize database for Node 3
 USE ddb_node3;
 
+-- Set auto-increment offset for Node 3 (3, 6, 9, 12, ...)
+SET @@auto_increment_increment = 3;
+SET @@auto_increment_offset = 3;
+
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
