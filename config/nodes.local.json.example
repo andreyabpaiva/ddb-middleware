@@ -1,0 +1,31 @@
+{
+  "_comment": "Template for physical machine deployment. Copy this to nodes.local.json and update IPs.",
+  "nodes": [
+    {
+      "id": 1,
+      "ip": "192.168.1.101",
+      "port": 5001,
+      "mysql_host": "localhost",
+      "mysql_port": 3306,
+      "mysql_database": "ddb_node1"
+    },
+    {
+      "id": 2,
+      "ip": "192.168.1.102",
+      "port": 5001,
+      "mysql_host": "localhost",
+      "mysql_port": 3306,
+      "mysql_database": "ddb_node2"
+    },
+    {
+      "id": 3,
+      "ip": "192.168.1.103",
+      "port": 5001,
+      "mysql_host": "localhost",
+      "mysql_port": 3306,
+      "mysql_database": "ddb_node3"
+    }
+  ],
+  "heartbeat_interval": 5,
+  "heartbeat_timeout": 15
+}

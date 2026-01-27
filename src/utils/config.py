@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 
 class Config:
 
-    def __init__(self, config_dir: str = "config"):
+    def __init__(self, config_dir: str = "config", nodes_config_file: str = "nodes.json"):
 
         self.config_dir = config_dir
+        self.nodes_config_file = nodes_config_file
         self._nodes_config: Optional[Dict[str, Any]] = None
         self._database_config: Optional[Dict[str, Any]] = None
 
@@ -18,7 +19,15 @@ class Config:
     def load_nodes_config(self) -> Dict[str, Any]:
 
         if self._nodes_config is None:
-            config_path = os.path.join(self.config_dir, "nodes.json")
+            cluster_nodes_env = os.getenv('CLUSTER_NODES')
+            if cluster_nodes_env:
+                try:
+                    self._nodes_config = json.loads(cluster_nodes_env)
+                    return self._nodes_config
+                except json.JSONDecodeError:
+                    pass
+
+            config_path = os.path.join(self.config_dir, self.nodes_config_file)
             with open(config_path, 'r') as f:
                 self._nodes_config = json.load(f)
         return self._nodes_config
@@ -48,7 +57,21 @@ class Config:
 
         for node in nodes:
             if node.get('id') == node_id:
-                return node
+                node_config = node.copy()
+
+                if os.getenv('NODE_IP'):
+                    node_config['ip'] = os.getenv('NODE_IP')
+                if os.getenv('NODE_PORT'):
+                    node_config['port'] = int(os.getenv('NODE_PORT'))
+
+                if os.getenv('NODE_MYSQL_HOST'):
+                    node_config['mysql_host'] = os.getenv('NODE_MYSQL_HOST')
+                if os.getenv('NODE_MYSQL_PORT'):
+                    node_config['mysql_port'] = int(os.getenv('NODE_MYSQL_PORT'))
+                if os.getenv('NODE_MYSQL_DATABASE'):
+                    node_config['mysql_database'] = os.getenv('NODE_MYSQL_DATABASE')
+
+                return node_config
 
         return None
 
@@ -73,9 +96,14 @@ class Config:
 _config_instance: Optional[Config] = None
 
 
-def get_config() -> Config:
+def get_config(config_dir: str = "config", nodes_config_file: str = "nodes.json") -> Config:
 
     global _config_instance
     if _config_instance is None:
-        _config_instance = Config()
+        _config_instance = Config(config_dir=config_dir, nodes_config_file=nodes_config_file)
     return _config_instance
+
+
+def reset_config():
+    global _config_instance
+    _config_instance = None

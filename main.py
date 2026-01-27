@@ -39,6 +39,19 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        '--nodes-config',
+        type=str,
+        default='nodes.json',
+        help='Nodes configuration file name (default: nodes.json). Use nodes.local.json for physical machines.'
+    )
+
+    parser.add_argument(
+        '--local',
+        action='store_true',
+        help='Shortcut for --nodes-config=nodes.local.json (for physical machine deployment)'
+    )
+
+    parser.add_argument(
         '--log-level',
         type=str,
         default='INFO',
@@ -58,12 +71,17 @@ def main():
     import logging
     log_level = getattr(logging, args.log_level)
 
+    nodes_config_file = args.nodes_config
+    if args.local:
+        nodes_config_file = 'nodes.local.json'
+
     print(f"Starting Distributed Database Node {args.node_id}")
     print(f"Configuration directory: {args.config_dir}")
+    print(f"Nodes config file: {nodes_config_file}")
     print(f"Log level: {args.log_level}")
 
     try:
-        config = Config(config_dir=args.config_dir)
+        config = Config(config_dir=args.config_dir, nodes_config_file=nodes_config_file)
 
         node_instance = Node(node_id=args.node_id, config=config)
 
